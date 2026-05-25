@@ -1,53 +1,54 @@
 import config from '../config/config.js';
 import nodemailer from 'nodemailer';
 
-
-// Create a transporter using Gmail and OAuth2 authentication 
-
-// What is does ?
-
-// This transporter is configured to use Gmail's SMTP service with OAuth2 authentication. 
-// It allows the application to send emails on behalf of the user specified in the EMAIL_USER environment variable, 
-// using the provided Google client ID, client secret, and refresh token for authentication.
+// ─────────────────────────────────────────────────────────────────
+// Gmail SMTP transporter using App Password (simpler & more reliable
+// than OAuth2 — no expiring tokens).
+//
+// To generate an App Password:
+//  1. Go to myaccount.google.com → Security → 2-Step Verification
+//  2. Scroll to "App Passwords" at the bottom
+//  3. Select "Mail" + "Other (Custom name)" → Generate
+//  4. Copy the 16-char password into EMAIL_PASS in .env
+// ─────────────────────────────────────────────────────────────────
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // TLS on port 587
   auth: {
-    type: 'OAuth2',
     user: config.EMAIL_USER,
-    clientId: config.GOOGLE_CLIENT_ID,
-    clientSecret: config.GOOGLE_CLIENT_SECRET,
-    refreshToken: config.REFRESH_TOKEN,
+    pass: config.EMAIL_PASS, // Gmail App Password (NOT your regular Gmail password)
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 
-// Verify the connection configuration
-transporter.verify((error, success) => {
+// Verify the connection configuration at startup
+transporter.verify((error) => {
   if (error) {
-    console.error('Error connecting to email server:', error);
+    console.error('❌ Email server connection failed:', error.message);
+    console.error('   → Make sure EMAIL_USER and EMAIL_PASS (App Password) are set in .env');
   } else {
-    console.log('Email server is ready to send messages');
+    console.log('✅ Email server is ready to send messages');
   }
 });
 
 // Function to send email
-
 const sendEmail = async (to, subject, text, html) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Sonity" <${config.EMAIL_USER}>`, // sender address
-      to, // list of receivers
-      subject, // Subject line
-      text, // plain text body
-      html, // html body
+      from: `"Sonity" <${config.EMAIL_USER}>`,
+      to,
+      subject,
+      text,
+      html,
     });
-
-    console.log('Message sent: %s', info.messageId);
-    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    console.log('✅ Email sent to %s | MessageID: %s', to, info.messageId);
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('❌ Error sending email to %s:', to, error.message);
   }
 };
-
 
 export default sendEmail;

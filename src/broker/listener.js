@@ -203,6 +203,52 @@ function startListener() {
       console.log("❌ Error while sending login email:", error);
     }
   });
+
+  // Send Password Reset Email
+  subscribeToQueue("password_reset", async (msg) => {
+    try {
+      const { email, fullName: { firstName, lastName }, resetLink } = msg;
+
+      const template = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8" />
+          <style>
+            body { background-color: #f4f7fb; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+            .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+            .header { text-align: center; color: #6366f1; }
+            .button { display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+            .footer { font-size: 12px; color: #777; text-align: center; margin-top: 30px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h2 class="header">🔑 Reset Your Password</h2>
+            <p>Hello ${firstName} ${lastName},</p>
+            <p>We received a request to reset the password for your Sonity account. Click the button below to choose a new password. This link is valid for 1 hour.</p>
+            <center>
+              <a href="${resetLink}" class="button">Reset Password</a>
+            </center>
+            <p>If you did not request a password reset, you can safely ignore this email.</p>
+            <p class="footer">Sonity Audio Streaming Platform</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      await sendEmail(
+        email,
+        "🔒 Reset Your Sonity Password",
+        `Reset your Sonity password here: ${resetLink}`,
+        template
+      );
+
+      console.log(`✅ Password reset email sent to ${email}`);
+    } catch (error) {
+      console.log("❌ Error while sending password reset email:", error);
+    }
+  });
 }
 
 export default startListener;

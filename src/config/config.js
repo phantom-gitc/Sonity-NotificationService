@@ -5,14 +5,10 @@ dotenvConfig();
 
 
 const _config = {
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    REFRESH_TOKEN: process.env.REFRESH_TOKEN,
     EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS, // Gmail App Password (not regular password)
     JWT_SECRET: process.env.JWT_SECRET,
     RABITMQ_URI: process.env.RABITMQ_URI,
-    
-
 }
 
 export default Object.freeze(_config);
