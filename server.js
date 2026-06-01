@@ -30,13 +30,29 @@ io.use((socket, next) => {
   try {
     const authToken = socket.handshake.auth?.token;
     const cookieToken = readCookie(socket.handshake.headers.cookie, 'token');
-    const token = authToken || cookieToken;
+    let token = authToken || cookieToken;
 
     if (!token) {
       return next(new Error('Authentication token is required'));
     }
 
-    const decoded = jwt.verify(decodeURIComponent(token), config.JWT_SECRET);
+    // Clean up surrounding quotes from cookie parsing
+    token = token.replace(/^["']|["']$/g, '');
+
+    // Strip "Bearer " prefix if sent that way
+    if (token.startsWith('Bearer ')) {
+      token = token.slice(7);
+    }
+
+    // Safely decode URL characters in token if any
+    let decodedToken = token;
+    try {
+      decodedToken = decodeURIComponent(token);
+    } catch (_) {
+      // Keep original token if URL decoding fails
+    }
+
+    const decoded = jwt.verify(decodedToken, config.JWT_SECRET);
     socket.user = {
       id: decoded.id,
       fullName: decoded.fullName,

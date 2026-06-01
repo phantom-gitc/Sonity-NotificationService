@@ -13,7 +13,7 @@ const _config = {
     JWT_SECRET: process.env.JWT_SECRET,
     RABBITMQ_URI: process.env.RABBITMQ_URI || process.env.RABITMQ_URI,
     RABITMQ_URI: process.env.RABBITMQ_URI || process.env.RABITMQ_URI,
-}
+};
 
 ["JWT_SECRET", "EMAIL_USER", "EMAIL_PASS"].forEach((envVar) => {
     if (!_config[envVar]) {
